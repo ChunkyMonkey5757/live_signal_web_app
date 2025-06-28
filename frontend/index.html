@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Signal Scanner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        header {
+            background-color: #293241;
+            color: #ffffff;
+            padding: 1rem;
+        }
+
+        main {
+            padding: 2rem 1rem;
+            max-width: 500px;
+            margin: auto;
+        }
+
+        form {
+            margin-bottom: 2rem;
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: #0077cc;
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #005fa3;
+        }
+
+        .error {
+            color: #c62828;
+            background: #ffeaea;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .signal-output {
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 0.25rem 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Live Signal Scanner</h1>
+    </header>
+    <main>
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <input type="text" name="pair" placeholder="e.g. EUR_USD" required>
+            <select name="interval">
+                <option value="M1">1 Minute</option>
+                <option value="M5">5 Minutes</option>
+                <option value="M15" selected>15 Minutes</option>
+                <option value="H1">1 Hour</option>
+                <option value="H4">4 Hours</option>
+                <option value="D">1 Day</option>
+            </select>
+            <button type="submit">Scan</button>
+        </form>
+
+        {% if signal %}
+            <div class="signal-output">
+                <h2>Signal for {{ signal.pair }} ({{ signal.interval }})</h2>
+                <ul>
+                    <li><strong>RSI:</strong> {{ signal['RSI'] }}</li>
+                    <li><strong>MACD:</strong> {{ signal['MACD'] }}</li>
+                    <li><strong>Signal Line:</strong> {{ signal['Signal Line'] }}</li>
+                    <li><strong>Histogram:</strong> {{ signal['Histogram'] }}</li>
+                    <li><strong>ADX:</strong> {{ signal['ADX'] }}</li>
+                    <li><strong>Decision:</strong> {{ signal['decision'] }}</li>
+                </ul>
+            </div>
+        {% endif %}
+    </main>
+</body>
+</html>
