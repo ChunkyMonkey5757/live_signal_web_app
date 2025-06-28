@@ -4,7 +4,7 @@ from typing import List, Dict
 
 OANDA_API_KEY = os.getenv("OANDA_API_KEY")
 ACCOUNT_TYPE = os.getenv("OANDA_ACCOUNT_TYPE", "practice")
-OANDA_URL = f"https://api-{ACCOUNT_TYPE}.oanda.com/v3/instruments"
+OANDA_URL = "https://api-fxtrade.oanda.com/v3/instruments"
 
 HEADERS = {
     "Authorization": f"Bearer {OANDA_API_KEY}"
