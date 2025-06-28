@@ -1,26 +1,40 @@
-import requests
 import os
+import requests
+from typing import List, Dict
 
 OANDA_API_KEY = os.getenv("OANDA_API_KEY")
-OANDA_ACCOUNT_TYPE = os.getenv("OANDA_ACCOUNT_TYPE", "practice")
-OANDA_BASE_URL = f"https://api-{OANDA_ACCOUNT_TYPE}.oanda.com/v3"
+ACCOUNT_TYPE = os.getenv("OANDA_ACCOUNT_TYPE", "practice")
+OANDA_URL = f"https://api-{ACCOUNT_TYPE}.oanda.com/v3/instruments"
 
-def get_candles_from_oanda(pair, granularity="M15", count=100):
-    url = f"{OANDA_BASE_URL}/instruments/{pair}/candles"
-    headers = {"Authorization": f"Bearer {OANDA_API_KEY}"}
-    params = {"count": count, "granularity": granularity, "price": "M"}
+HEADERS = {
+    "Authorization": f"Bearer {OANDA_API_KEY}"
+}
 
-    response = requests.get(url, headers=headers, params=params)
-    if response.status_code == 200:
-        data = response.json()
-        candles = [{
+def fetch_oanda_candles(pair: str, count: int = 100) -> List[Dict]:
+    """
+    Fetch candle data from OANDA for a given instrument.
+    """
+    url = f"{OANDA_URL}/{pair}/candles"
+    params = {
+        "count": count,
+        "granularity": "M5",
+        "price": "M"
+    }
+
+    response = requests.get(url, headers=HEADERS, params=params)
+    response.raise_for_status()
+    data = response.json()
+
+    candles = []
+    for c in data["candles"]:
+        candle = {
             "time": c["time"],
             "open": float(c["mid"]["o"]),
             "high": float(c["mid"]["h"]),
             "low": float(c["mid"]["l"]),
-            "close": float(c["mid"]["c"])
-        } for c in data["candles"] if c["complete"]]
-        return candles
-    else:
-        print("Error fetching candles:", response.status_code, response.text)
-        return None
+            "close": float(c["mid"]["c"]),
+            "volume": c["volume"]
+        }
+        candles.append(candle)
+
+    return candles
