@@ -1,21 +1,45 @@
-from flask import Flask, render_template, request
-from oanda_handler import get_candles_from_oanda
-from signal_logic import analyze_signals
+import os
+import logging
+from flask import Flask, render_template
+from api_handler import fetch_oanda_candles
+from indicators import analyze_signals
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
 
-@app.route("/", methods=["GET", "POST"])
+# ✅ Confirmed OANDA Crypto Pairs from User Screenshots
+CRYPTO_PAIRS = [
+    "BTC_USD", "ETH_USD", "LTC_USD", "BCH_USD",
+    "LINK_USD", "SOL_USD", "UNI_USD", "PAXG_USD", "AAVE_USD"
+]
+
+@app.route("/")
 def home():
-    signal_data = None
-    if request.method == "POST":
-        pair = request.form["pair"]
-        interval = request.form.get("interval", "M15")
-        candles = get_candles_from_oanda(pair, interval)
-        if candles:
-            signal_data = analyze_signals(candles)
-            signal_data["pair"] = pair
-            signal_data["interval"] = interval
-    return render_template("index.html", signal=signal_data)
+    results = []
+
+    for pair in CRYPTO_PAIRS:
+        try:
+            candles = fetch_oanda_candles(pair)
+            signal = analyze_signals(candles)
+            signal["pair"] = pair
+            results.append(signal)
+        except Exception as e:
+            logging.exception(f"Failed to analyze {pair}")
+            results.append({
+                "pair": pair,
+                "RSI": None,
+                "MACD": None,
+                "Signal Line": None,
+                "Histogram": None,
+                "ADX": None,
+                "decision": "ERROR"
+            })
+
+    return render_template("index.html", results=results)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 5000)),
+        debug=os.getenv("DEBUG", "False").lower() == "true"
+    )
